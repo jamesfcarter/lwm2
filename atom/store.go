@@ -44,6 +44,10 @@ func NewStore(x AtomLoader) *Store {
 		atoms: make(map[string]xproto.Atom),
 	}
 	for _, name := range required {
+		_, done := store.atoms[name]
+		if done {
+			continue
+		}
 		atom, err := x.AtomLoad(name)
 		if err != nil {
 			log.Fatalf("failed to intern atom %s: %v", name, err)

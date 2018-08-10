@@ -21,7 +21,7 @@ func (fa *FakeAtom) AtomLoad(name string) (xproto.Atom, error) {
 }
 
 func init() {
-	atom.Require("test1", "test2", "test3")
+	atom.Require("test1", "test2", "test3", "test1" )
 }
 
 func TestAtomsLoaded(t *testing.T) {
