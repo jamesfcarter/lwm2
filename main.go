@@ -17,14 +17,6 @@ type Screen struct {
 }
 type Screens []*Screen
 
-type Client struct {
-	Window       xproto.Window
-	Parent       xproto.Window
-	TransientFor xproto.Window
-	Screen       *Screen
-}
-type Clients map[xproto.Window]*Client
-
 func initXinerama(x *xgb.Conn) []xinerama.ScreenInfo {
 	err := xinerama.Init(x)
 	if err != nil {
