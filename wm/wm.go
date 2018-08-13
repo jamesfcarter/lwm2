@@ -1,7 +1,9 @@
 package wm
 
 import (
+	"github.com/BurntSushi/xgb/xproto"
 	"github.com/BurntSushi/xgbutil"
+	"github.com/BurntSushi/xgbutil/xevent"
 	"github.com/BurntSushi/xgbutil/xwindow"
 )
 
@@ -19,8 +21,9 @@ type Screens []*Screen
 
 type Client struct {
 	Screen *Screen
+	Window *xwindow.Window
 }
-type Clients []*Client
+type Clients map[xproto.Window]*Client
 
 func Init() (*Wm, error) {
 	var err error
@@ -30,7 +33,29 @@ func Init() (*Wm, error) {
 		return nil, err
 	}
 	wm.loadScreens()
+	err = wm.OnEachScreen(loadClients)
+	if err != nil {
+		return nil, err
+	}
+	err = wm.OnEachScreen(manageClients)
+	if err != nil {
+		return nil, err
+	}
 	return wm, nil
+}
+
+func (wm *Wm) OnEachScreen(f func(*Screen) error) error {
+	for _, s := range wm.Screens {
+		err := f(s)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (wm *Wm) Run() {
+	xevent.Main(wm.X)
 }
 
 func (wm *Wm) loadScreens() {
@@ -42,4 +67,22 @@ func (wm *Wm) loadScreens() {
 			Wm:   wm,
 		})
 	}
+}
+
+func loadClients(s *Screen) error {
+	windows, err := s.UnmanagedWindows()
+	if err != nil {
+		return err
+	}
+	for _, w := range windows {
+		s.Clients[w] = &Client{
+			Screen: s,
+			Window: xwindow.New(s.X(), w),
+		}
+	}
+	return nil
+}
+
+func manageClients(s *Screen) error {
+	return s.OnEachClient(func(c *Client) error { return c.Manage() })
 }
