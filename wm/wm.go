@@ -22,6 +22,7 @@ type Screens []*Screen
 type Client struct {
 	Screen *Screen
 	Window *xwindow.Window
+	Name   string
 }
 type Clients map[xproto.Window]*Client
 
@@ -63,8 +64,9 @@ func (wm *Wm) loadScreens() {
 	wm.Screens = make(Screens, 0, len(setup.Roots))
 	for _, si := range setup.Roots {
 		wm.Screens = append(wm.Screens, &Screen{
-			Root: xwindow.New(wm.X, si.Root),
-			Wm:   wm,
+			Root:    xwindow.New(wm.X, si.Root),
+			Wm:      wm,
+			Clients: make(Clients),
 		})
 	}
 }
